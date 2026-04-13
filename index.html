@@ -13,6 +13,7 @@
     <!-- Simple Keyboard CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-keyboard@latest/build/css/index.css">
     <style>
+        /* Toàn bộ CSS giữ nguyên như phiên bản trước, chỉ thêm một chút style cho keyboard wrapper */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh;
@@ -66,7 +67,6 @@
         }
         #app { max-width: 760px; width: 100%; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; touch-action: pan-y; }
         
-        /* ========== ANIMATIONS ========== */
         @keyframes fadeSlideUp {
             0% { opacity: 0; transform: translateY(12px); }
             100% { opacity: 1; transform: translateY(0); }
@@ -152,7 +152,6 @@
         .theme-toggle:hover { transform: rotate(15deg); background: white; }
         body.dark-mode .theme-toggle { background: rgba(30,41,59,0.8); color: #fbbf24; border-color: rgba(255,255,255,0.1); }
 
-        /* Tabs */
         .tabs-nav {
             display: flex;
             gap: 8px;
@@ -193,7 +192,6 @@
         }
         .panel.active { display: block; }
 
-        /* Flashcard */
         .flashcard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .card-stage { perspective: 2000px; margin: 8px 0; touch-action: pan-y; }
         .swipe-container { width: 100%; border-radius: 40px; transition: transform 0.2s; will-change: transform; }
@@ -254,7 +252,6 @@
         .btn-flip i { color: white; }
         body.dark-mode .btn-flip { background: #3b82f6; }
 
-        /* Wordlist */
         .decks-bar {
             display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px;
             background: rgba(255,255,255,0.4); backdrop-filter: blur(8px); padding: 8px 10px;
@@ -354,22 +351,26 @@
 
         /* Virtual Keyboard */
         .keyboard-container {
-            margin-top: 10px;
+            margin-top: 12px;
             border-radius: 24px;
             overflow: hidden;
             box-shadow: 0 10px 25px -8px #1e3a5f30;
             animation: fadeSlideUp 0.3s;
         }
-        .simple-keyboard { background: #f8fafc; border-radius: 20px; }
-        body.dark-mode .simple-keyboard { background: #1e293b; color: #e0e7ff; }
-        .hg-theme-default .hg-button { 
-            background: white; border-radius: 14px; font-weight: 600; 
-            box-shadow: 0 4px 6px -2px #00000010; transition: all 0.1s;
+        .simple-keyboard {
+            background: #f8fafc !important;
+            border-radius: 20px !important;
+            padding: 6px 4px !important;
         }
-        .hg-theme-default .hg-button:active { background: #e2e8f0; transform: scale(0.94); }
-        body.dark-mode .hg-theme-default .hg-button { background: #334155; color: #e0e7ff; border-color: #475569; }
+        body.dark-mode .simple-keyboard { background: #1e293b !important; color: #e0e7ff; }
+        .hg-theme-default .hg-button { 
+            background: white !important; border-radius: 14px !important; font-weight: 600 !important; 
+            box-shadow: 0 4px 6px -2px #00000010 !important; transition: all 0.1s !important;
+            color: #1e3a5f !important;
+        }
+        .hg-theme-default .hg-button:active { background: #e2e8f0 !important; transform: scale(0.94); }
+        body.dark-mode .hg-theme-default .hg-button { background: #334155 !important; color: #e0e7ff !important; border-color: #475569 !important; }
 
-        /* Quiz */
         .quiz-container {
             background: rgba(255,255,255,0.65); backdrop-filter: blur(20px); border-radius: 40px;
             padding: 24px 20px; border: 1px solid rgba(255,255,255,0.8);
@@ -477,7 +478,7 @@
             <button class="btn" id="cancelEditBtn" style="display:none;"><i class="fas fa-times"></i> Huỷ</button>
         </div>
         <!-- Bàn phím ảo sẽ được gắn vào đây -->
-        <div id="virtualKeyboardWrapper" class="keyboard-container"></div>
+        <div id="virtualKeyboardWrapper" class="keyboard-container" style="display: none;"></div>
         <div class="word-tip"><i class="far fa-lightbulb"></i> <span data-i18n="wordTip">Mẹo: File Word (.docx) mở bằng Microsoft Word.</span></div>
     </div>
 
@@ -509,7 +510,7 @@
 <script>
 (function(){
     "use strict";
-    // i18n
+    // i18n data
     const languages = ['vi', 'en', 'zh', 'ko', 'ja', 'fr', 'de', 'es', 'ru', 'it'];
     const langNames = { vi:'Tiếng Việt', en:'English', zh:'中文', ko:'한국어', ja:'日本語', fr:'Français', de:'Deutsch', es:'Español', ru:'Русский', it:'Italiano' };
     const i18n = {
@@ -537,6 +538,7 @@
     // Virtual Keyboard
     let virtualKeyboard = null;
     let activeInput = null;
+    const keyboardWrapper = document.getElementById('virtualKeyboardWrapper');
 
     // DOM elements
     const panels = { flashcard: document.getElementById('panel-flashcard'), wordlist: document.getElementById('panel-wordlist'), quiz: document.getElementById('panel-quiz') };
@@ -559,54 +561,83 @@
     const flashcardDeckSelector = document.getElementById('flashcardDeckSelector');
     const langSelect = document.getElementById('langSelector');
     const themeToggle = document.getElementById('themeToggle');
-    const keyboardWrapper = document.getElementById('virtualKeyboardWrapper');
 
     let touchStartX = 0, touchCurrentX = 0, isSwiping = false;
     const SWIPE_THRESHOLD = 50;
 
     function escapeHtml(t) { return String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]); }
 
-    function setInputLanguage(lang) {
-        newWordInput.setAttribute('lang', lang);
-        newDefInput.setAttribute('lang', lang);
-        newWordInput.setAttribute('inputmode', 'text');
-        newDefInput.setAttribute('inputmode', 'text');
-        if (virtualKeyboard) {
-            virtualKeyboard.setOptions({ layoutName: getKeyboardLayout(lang) });
+    // ---- KHỞI TẠO BÀN PHÍM ẢO ----
+    function initVirtualKeyboard() {
+        if (virtualKeyboard) return;
+        try {
+            virtualKeyboard = new SimpleKeyboard({
+                onChange: input => { if (activeInput) activeInput.value = input; },
+                onKeyPress: button => { 
+                    if (button === "{enter}" && activeInput) {
+                        activeInput.blur();
+                        hideKeyboard();
+                    }
+                },
+                layout: {
+                    default: [
+                        "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
+                        "{tab} q w e r t y u i o p [ ] \\",
+                        "{lock} a s d f g h j k l ; ' {enter}",
+                        "{shift} z x c v b n m , . / {shift}",
+                        ".com @ {space}"
+                    ],
+                    vietnamese: [
+                        "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
+                        "{tab} q w e r t y u i o p ư ơ \\",
+                        "{lock} a s d f g h j k l ; ' {enter}",
+                        "{shift} z x c v b n m , . / {shift}",
+                        ".com @ {space}"
+                    ]
+                },
+                display: { "{bksp}": "⌫", "{enter}": "⏎", "{shift}": "⇧", "{lock}": "⇪", "{tab}": "↹", "{space}": "␣" },
+                theme: "hg-theme-default",
+            });
+            keyboardWrapper.appendChild(virtualKeyboard.keyboardDOM);
+            keyboardWrapper.style.display = 'none';
+        } catch (e) {
+            console.warn("Không thể khởi tạo bàn phím ảo:", e);
+            virtualKeyboard = null;
         }
     }
 
     function getKeyboardLayout(lang) {
-        const layouts = {
-            vi: 'vietnamese', en: 'default', zh: 'chinese', ko: 'korean', ja: 'japanese',
-            fr: 'french', de: 'german', es: 'spanish', ru: 'russian', it: 'italian'
-        };
+        const layouts = { vi: 'vietnamese' };
         return layouts[lang] || 'default';
-    }
-
-    function initVirtualKeyboard() {
-        virtualKeyboard = new SimpleKeyboard.default({
-            onChange: input => { if (activeInput) activeInput.value = input; },
-            onKeyPress: button => { if (button === "{enter}" && activeInput) activeInput.blur(); },
-            layout: { default: ["` 1 2 3 4 5 6 7 8 9 0 - = {bksp}", "{tab} q w e r t y u i o p [ ] \\", "{lock} a s d f g h j k l ; ' {enter}", "{shift} z x c v b n m , . / {shift}", ".com @ {space}" ],
-                vietnamese: ["` 1 2 3 4 5 6 7 8 9 0 - = {bksp}", "{tab} q w e r t y u i o p ư ơ \\", "{lock} a s d f g h j k l ; ' {enter}", "{shift} z x c v b n m , . / {shift}", ".com @ {space}"] },
-            display: { "{bksp}": "⌫", "{enter}": "⏎", "{shift}": "⇧", "{lock}": "⇪", "{tab}": "↹", "{space}": "␣" },
-            theme: "hg-theme-default",
-        });
     }
 
     function showKeyboardForInput(inputEl) {
         if (!virtualKeyboard) initVirtualKeyboard();
+        if (!virtualKeyboard) return; // fallback nếu lỗi
         activeInput = inputEl;
-        virtualKeyboard.setOptions({ inputName: inputEl.id, layoutName: getKeyboardLayout(currentWordlistDeck) });
+        const layoutName = getKeyboardLayout(currentWordlistDeck);
+        virtualKeyboard.setOptions({
+            inputName: inputEl.id,
+            layoutName: layoutName
+        });
         virtualKeyboard.setInput(inputEl.value);
         keyboardWrapper.style.display = 'block';
-        keyboardWrapper.innerHTML = '';
-        keyboardWrapper.appendChild(virtualKeyboard.keyboardDOM);
     }
 
-    function hideKeyboard() { if (keyboardWrapper) keyboardWrapper.style.display = 'none'; activeInput = null; }
+    function hideKeyboard() {
+        if (keyboardWrapper) keyboardWrapper.style.display = 'none';
+        activeInput = null;
+    }
 
+    function setInputLanguage(lang) {
+        newWordInput.setAttribute('lang', lang);
+        newDefInput.setAttribute('lang', lang);
+        if (virtualKeyboard && activeInput) {
+            virtualKeyboard.setOptions({ layoutName: getKeyboardLayout(lang) });
+        }
+    }
+
+    // ---- CÁC HÀM XỬ LÝ DỮ LIỆU FLASHCARD ----
     function initDecks() {
         const stored = localStorage.getItem('flashcard_decks_v9');
         if (stored) { try { decks = JSON.parse(stored); } catch(e){ setDefaultDecks(); } }
@@ -788,6 +819,9 @@
         initDecks();
         const savedTheme = localStorage.getItem('flashcard_theme');
         if (savedTheme === 'dark') { darkMode = true; document.body.classList.add('dark-mode'); themeToggle.innerHTML = '<i class="fas fa-sun"></i>'; }
+        
+        initVirtualKeyboard(); // khởi tạo sớm
+        
         renderDeckTabs(); updateAllDeckSelectors();
         setInputLanguage(currentWordlistDeck);
         renderFlashcard(); renderWordList(); loadQuiz();
@@ -838,14 +872,15 @@
         modeTermToDef.addEventListener('click', ()=>{ quizMode='termToDef'; modeTermToDef.classList.add('active'); modeDefToTerm.classList.remove('active'); loadQuiz(); });
         modeDefToTerm.addEventListener('click', ()=>{ quizMode='defToTerm'; modeDefToTerm.classList.add('active'); modeTermToDef.classList.remove('active'); loadQuiz(); });
 
-        // Virtual keyboard events
+        // Bàn phím ảo
         newWordInput.addEventListener('focus', () => showKeyboardForInput(newWordInput));
         newDefInput.addEventListener('focus', () => showKeyboardForInput(newDefInput));
-        newWordInput.addEventListener('blur', () => setTimeout(hideKeyboard, 100));
-        newDefInput.addEventListener('blur', () => setTimeout(hideKeyboard, 100));
-        // Hide keyboard when clicking outside
+        newWordInput.addEventListener('blur', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('.simple-keyboard')) setTimeout(hideKeyboard, 150); });
+        newDefInput.addEventListener('blur', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('.simple-keyboard')) setTimeout(hideKeyboard, 150); });
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.add-word-form') && !e.target.closest('.simple-keyboard')) hideKeyboard();
+            if (!e.target.closest('.add-word-form') && !e.target.closest('.simple-keyboard')) {
+                hideKeyboard();
+            }
         });
     }
 
