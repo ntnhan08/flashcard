@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <meta name="google" content="notranslate">
-    <title>📚 Flashcard · Học tập thông minh</title>
-    <!-- Fonts & Icons -->
+    <title>📚 Flashcard · Gboard Style</title>
+    <!-- Fonts & Icons (hỗ trợ offline qua system fallback) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ===== TOÀN BỘ CSS (giữ nguyên từ bản trước) ===== */
+        /* ===== TOÀN BỘ CSS NÂNG CẤP + ANIMATION ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             min-height: 100vh;
@@ -64,13 +64,25 @@
             opacity: 0.1;
         }
         #app { max-width: 760px; width: 100%; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; touch-action: pan-y; }
+        
+        /* Animations */
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        @keyframes bounce { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
+        @keyframes slideOutLeft { to { opacity: 0; transform: translateX(-30px); } }
+        @keyframes toastIn { from { opacity: 0; bottom: 0; } to { opacity: 1; bottom: 20px; } }
+
         .app-bar {
             display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
             background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(16px); padding: 12px 20px;
             border-radius: 60px; border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 12px 24px -12px rgba(0, 40, 80, 0.12);
+            animation: fadeSlideDown 0.4s ease-out;
         }
-        body.dark-mode .app-bar { background: rgba(30, 41, 59, 0.8); border-color: rgba(255, 255, 255, 0.1); box-shadow: 0 12px 24px -12px rgba(0,0,0,0.4); }
+        body.dark-mode .app-bar { background: rgba(30, 41, 59, 0.8); border-color: rgba(255, 255, 255, 0.1); }
         h1 {
             font-family: 'Quicksand', sans-serif; font-weight: 700; font-size: clamp(1.5rem, 6vw, 2rem);
             display: flex; align-items: center; gap: 8px; color: #1e3a5f;
@@ -83,6 +95,7 @@
             background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(8px); padding: 8px 16px;
             border-radius: 40px; border: 1px solid rgba(255,255,255,0.8); font-weight: 600;
             color: #1e4d74; outline: none; cursor: pointer; font-size: 0.95rem;
+            transition: all 0.2s;
         }
         body.dark-mode .lang-selector, body.dark-mode .deck-selector {
             background: rgba(30, 41, 59, 0.8); border-color: rgba(255,255,255,0.1); color: #cbd5e1;
@@ -91,10 +104,11 @@
             background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.8);
             backdrop-filter: blur(8px); padding: 8px 12px; border-radius: 40px; cursor: pointer;
             color: #1e4d74; font-size: 1.2rem; display: flex; align-items: center;
+            transition: all 0.2s;
         }
+        .theme-toggle:active { transform: scale(0.9); }
         body.dark-mode .theme-toggle { background: rgba(30,41,59,0.8); color: #fbbf24; border-color: rgba(255,255,255,0.1); }
 
-        /* Tabs */
         .tabs-nav {
             display: flex; gap: 8px; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(12px);
             padding: 6px; border-radius: 60px; border: 1px solid rgba(255, 255, 255, 0.6);
@@ -107,19 +121,18 @@
         }
         body.dark-mode .tab-btn { color: #b9c7da; }
         .tab-btn i { color: #2e7eb0; font-size: 1rem; }
-        body.dark-mode .tab-btn i { color: #94b9ff; }
+        .tab-btn:active { transform: scale(0.96); }
         .tab-btn.active { background: white; box-shadow: 0 8px 18px -8px #2e7eb030; color: #1a5f8a; font-weight: 700; }
         body.dark-mode .tab-btn.active { background: #1e293b; box-shadow: 0 8px 18px -8px #00000060; color: #e0e7ff; }
-        .panel { display: none; animation: panelFade 0.3s; }
-        .panel.active { display: block; }
-        @keyframes panelFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeSlideUp 0.3s ease-out; }
 
         /* Flashcard */
         .flashcard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .card-stage { perspective: 2000px; margin: 8px 0; touch-action: pan-y; }
-        .swipe-container { width: 100%; border-radius: 40px; transition: transform 0.2s; will-change: transform; }
+        .swipe-container { width: 100%; border-radius: 40px; transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1); will-change: transform; }
         .card { width: 100%; aspect-ratio: 5 / 3.2; cursor: pointer; border-radius: 40px; }
-        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s; transform-style: preserve-3d; border-radius: 40px; box-shadow: 0 20px 35px -10px rgba(0,40,80,0.15), 0 0 0 1px rgba(255,255,255,0.6); }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1); transform-style: preserve-3d; border-radius: 40px; box-shadow: 0 20px 35px -10px rgba(0,40,80,0.15), 0 0 0 1px rgba(255,255,255,0.6); }
         body.dark-mode .card-inner { box-shadow: 0 20px 35px -10px #00000080, 0 0 0 1px rgba(255,255,255,0.1); }
         .card.flipped .card-inner { transform: rotateY(180deg); }
         .card-front, .card-back {
@@ -136,7 +149,7 @@
         body.dark-mode .card-label { color: #bdd3ff; background: rgba(30,41,59,0.8); border-color: rgba(255,255,255,0.1); }
         .card-content { font-size: clamp(1.8rem, 10vw, 3.4rem); font-weight: 700; line-height: 1.25; color: #0b2b44; text-shadow: 0 2px 10px rgba(255,255,255,0.9); max-width: 100%; text-align: center; user-select: none; }
         body.dark-mode .card-content { color: #f0f4ff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .swipe-hint { display: flex; justify-content: center; gap: 20px; margin: 12px 0 6px; color: #4f7396; font-size: 0.9rem; }
+        .swipe-hint { display: flex; justify-content: center; gap: 20px; margin: 12px 0 6px; color: #4f7396; font-size: 0.9rem; animation: fadeSlideUp 0.6s; }
         body.dark-mode .swipe-hint { color: #9ab3d0; }
         .progress-area { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; }
         .counter-badge { background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); padding: 8px 20px; border-radius: 40px; font-weight: 600; border: 1px solid rgba(255,255,255,0.8); color: #1f4970; font-size: 0.95rem; }
@@ -146,14 +159,14 @@
             background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.9);
             padding: 10px 18px; border-radius: 50px; font-weight: 600; font-size: 0.95rem; color: #1e4d74;
             box-shadow: 0 8px 16px -8px rgba(0,40,80,0.1); display: inline-flex; align-items: center; gap: 6px;
-            cursor: pointer; transition: all 0.2s;
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         body.dark-mode .btn { background: rgba(30,41,59,0.8); border-color: rgba(255,255,255,0.1); color: #e0e7ff; }
         .btn i { color: #2e7eb0; font-size: 1rem; }
         body.dark-mode .btn i { color: #94b9ff; }
         .btn:hover { background: white; transform: translateY(-2px); box-shadow: 0 12px 20px -10px #2e7eb040; }
         body.dark-mode .btn:hover { background: #1e293b; box-shadow: 0 12px 20px -10px #00000080; }
-        .btn:active { transform: translateY(1px); }
+        .btn:active { transform: scale(0.96) translateY(1px); }
         .btn:disabled { opacity: 0.4; pointer-events: none; }
         .btn-flip { background: #2e7eb0; color: white; border: none; min-width: 130px; }
         .btn-flip i { color: white; }
@@ -177,16 +190,19 @@
         .deck-tab i { color: #2e7eb0; }
         .deck-tab.active { background: white; box-shadow: 0 6px 12px -6px #2e7eb040; color: #0e3a5c; }
         body.dark-mode .deck-tab.active { background: #1e293b; color: #e0e7ff; }
-        .deck-tab .delete-deck { margin-left: 4px; opacity: 0.7; }
-        .deck-tab .delete-deck:hover { color: #c24a4a; opacity: 1; }
+        .deck-tab .delete-deck { margin-left: 4px; opacity: 0.7; transition: 0.2s; }
+        .deck-tab .delete-deck:hover { color: #c24a4a; opacity: 1; transform: scale(1.2); }
         .add-deck-btn {
             background: #2e7eb0; color: white; border: none; padding: 8px 16px; border-radius: 30px;
             font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.9rem;
+            transition: all 0.2s;
         }
+        .add-deck-btn:active { transform: scale(0.96); }
         .add-deck-form {
             display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; padding: 12px 14px;
             background: rgba(255,255,255,0.6); backdrop-filter: blur(12px); border-radius: 36px;
             border: 1px solid rgba(255,255,255,0.8);
+            animation: scaleIn 0.25s ease-out;
         }
         body.dark-mode .add-deck-form { background: rgba(30,41,59,0.6); border-color: rgba(255,255,255,0.1); }
         .add-deck-form input, .add-deck-form select {
@@ -208,9 +224,11 @@
         .word-item {
             display: flex; align-items: center; padding: 14px 16px; margin: 6px 8px;
             background: rgba(255,255,255,0.7); border-radius: 24px; backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.8); transition: all 0.15s;
+            border: 1px solid rgba(255,255,255,0.8); transition: all 0.25s;
             box-shadow: 0 4px 8px -4px rgba(0,0,0,0.02);
+            animation: slideInRight 0.3s ease-out;
         }
+        .word-item.removing { animation: slideOutLeft 0.25s forwards; pointer-events: none; }
         body.dark-mode .word-item { background: rgba(30,41,59,0.7); border-color: rgba(255,255,255,0.05); }
         .word-item:hover { background: rgba(255,255,255,0.95); box-shadow: 0 8px 18px -8px #2e7eb030; transform: scale(1.01); }
         body.dark-mode .word-item:hover { background: #1e293b; }
@@ -235,6 +253,7 @@
         body.dark-mode .icon-btn { background: rgba(30,41,59,0.8); color: #cbd5e1; border-color: rgba(255,255,255,0.1); }
         .icon-btn:hover { background: #e4eff9; color: #0b2b44; transform: scale(1.08); }
         body.dark-mode .icon-btn:hover { background: #1e293b; color: white; }
+        .icon-btn:active { transform: scale(0.9); }
 
         .add-word-form {
             display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; background: rgba(255,255,255,0.6);
@@ -245,22 +264,66 @@
         body.dark-mode .add-word-form input { background: #0f172a; border-color: #334155; color: #e0e7ff; }
         .add-word-form input:focus { border-color: #2e7eb0; box-shadow: 0 0 0 3px #2e7eb020; }
 
-        /* Virtual Keyboard */
+        /* Virtual Keyboard Gboard style */
         .virtual-keyboard {
             margin-top: 12px;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             border-radius: 28px;
-            padding: 14px 10px;
+            padding: 14px 10px 10px;
             border: 1px solid rgba(255,255,255,0.8);
             box-shadow: 0 10px 20px -10px rgba(0,0,0,0.1);
-            transition: opacity 0.2s;
-            max-height: 420px;
+            transition: opacity 0.25s;
+            max-height: 500px;
             overflow-y: auto;
+            animation: fadeSlideUp 0.3s;
         }
         body.dark-mode .virtual-keyboard {
-            background: rgba(30, 41, 59, 0.8);
+            background: rgba(30, 41, 59, 0.9);
             border-color: rgba(255,255,255,0.1);
+        }
+        .candidate-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 6px 12px;
+            justify-content: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 8px;
+            min-height: 52px;
+            align-items: center;
+        }
+        .candidate-item {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.9);
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1e3a5f;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        body.dark-mode .candidate-item {
+            background: #1e293b;
+            border-color: #334155;
+            color: #e0e7ff;
+        }
+        .candidate-item:active { background: #2e7eb0; color: white; transform: scale(0.95); }
+        .candidate-composition {
+            background: #e0e7ff;
+            border: 1px dashed #2e7eb0;
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #1e3a5f;
+        }
+        body.dark-mode .candidate-composition {
+            background: #2d3a52;
+            border-color: #3b82f6;
+            color: #e0e7ff;
         }
         .keyboard-row {
             display: flex;
@@ -277,7 +340,7 @@
             border: none;
             border-radius: 16px;
             font-weight: 600;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #1e3a5f;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
             cursor: pointer;
@@ -297,57 +360,40 @@
         .keyboard-key:active {
             background: #2e7eb0;
             color: white;
-            transform: scale(0.94);
+            transform: scale(0.92);
         }
         .keyboard-key.special {
             background: #eef3fa;
             color: #1e4d74;
             font-size: 1rem;
         }
-        body.dark-mode .keyboard-key.special {
-            background: #2d3a52;
-        }
-        .keyboard-key.space {
-            flex: 2;
-            min-width: 120px;
-        }
-        .keyboard-key.hide {
-            background: #2e7eb0;
-            color: white;
-        }
-        /* Lưới chọn ngôn ngữ */
+        body.dark-mode .keyboard-key.special { background: #2d3a52; }
+        .keyboard-key.space { flex: 2; min-width: 120px; }
+        .keyboard-key.hide { background: #2e7eb0; color: white; }
         .keyboard-lang-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 12px;
-            justify-content: center;
+            display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center;
         }
         .lang-shortcut {
-            background: rgba(255,255,255,0.8);
-            border: 1px solid rgba(255,255,255,0.9);
-            padding: 6px 12px;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #1e4d74;
+            background: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.9);
+            padding: 6px 12px; border-radius: 30px; font-size: 0.85rem; font-weight: 600;
+            color: #1e4d74; cursor: pointer; transition: all 0.15s;
+        }
+        body.dark-mode .lang-shortcut { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+        .lang-shortcut:hover { background: #2e7eb0; color: white; border-color: #2e7eb0; }
+        .lang-shortcut.active-lang { background: #2e7eb0; color: white; }
+        .ime-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 0 6px 6px;
+        }
+        .ime-toggle {
+            background: transparent;
+            border: 1px solid rgba(0,0,0,0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.15s;
-            flex: 0 0 auto;
-        }
-        body.dark-mode .lang-shortcut {
-            background: #1e293b;
-            border-color: #334155;
-            color: #cbd5e1;
-        }
-        .lang-shortcut:hover {
-            background: #2e7eb0;
-            color: white;
-            border-color: #2e7eb0;
-        }
-        .lang-shortcut.active-lang {
-            background: #2e7eb0;
-            color: white;
         }
 
         /* Quiz */
@@ -356,14 +402,8 @@
             padding: 24px 20px; border: 1px solid rgba(255,255,255,0.8);
         }
         body.dark-mode .quiz-container { background: rgba(30,41,59,0.6); border-color: rgba(255,255,255,0.1); }
-        .quiz-header {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
-            flex-wrap: wrap; gap: 10px;
-        }
-        .quiz-deck-selector {
-            padding: 8px 16px; border-radius: 30px; border: 1px solid #cbdbe9;
-            background: white; font-weight: 500; color: #1e3a5f; outline: none; font-size: 0.9rem;
-        }
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .quiz-deck-selector { padding: 8px 16px; border-radius: 30px; border: 1px solid #cbdbe9; background: white; font-weight: 500; color: #1e3a5f; outline: none; font-size: 0.9rem; }
         body.dark-mode .quiz-deck-selector { background: #0f172a; border-color: #334155; color: #e0e7ff; }
         .quiz-question { font-size: clamp(1.8rem, 8vw, 2.4rem); font-weight: 700; text-align: center; margin-bottom: 28px; color: #0e3a5c; }
         body.dark-mode .quiz-question { color: #e0e7ff; }
@@ -375,9 +415,13 @@
 
         .empty-msg { text-align: center; padding: 40px; color: #5a7e9c; }
         body.dark-mode .empty-msg { color: #9ab3d0; }
-        .toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e3a5f; color: white; padding: 12px 24px; border-radius: 50px; backdrop-filter: blur(12px); border: 1px solid #a0c4e0; z-index: 999; animation: toastIn 0.4s; font-size: 0.9rem; }
+        .toast-msg {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #1e3a5f; color: white; padding: 12px 24px; border-radius: 50px;
+            backdrop-filter: blur(12px); border: 1px solid #a0c4e0; z-index: 999;
+            animation: toastIn 0.4s; font-size: 0.9rem;
+        }
         body.dark-mode .toast-msg { background: #0f172a; border-color: #3b82f6; }
-        @keyframes toastIn { from { opacity: 0; bottom: 0; } to { opacity: 1; bottom: 20px; } }
         .word-tip { margin-top: 12px; font-size: 0.85rem; opacity: 0.8; color: #3a5f7a; }
         body.dark-mode .word-tip { color: #b9c7da; }
 
@@ -457,7 +501,6 @@
             <button class="btn" id="addWordBtn" style="background:#2e7eb0; color:white;"><i class="fas fa-plus"></i> <span data-i18n="add">Thêm</span></button>
             <button class="btn" id="cancelEditBtn" style="display:none;"><i class="fas fa-times"></i> Huỷ</button>
         </div>
-        <!-- Bàn phím ảo -->
         <div id="virtualKeyboard" class="virtual-keyboard" style="display: none;"></div>
         <div class="word-tip"><i class="far fa-lightbulb"></i> <span data-i18n="wordTip">Mẹo: File Word (.docx) mở bằng Microsoft Word.</span></div>
     </div>
@@ -488,7 +531,7 @@
 <script>
 (function(){
     "use strict";
-    // ==================== DỮ LIỆU i18n & LAYOUT BÀN PHÍM (NÂNG CẤP CHỮ TƯỢNG HÌNH) ====================
+    // ==================== i18n ====================
     const languages = ['vi', 'en', 'zh', 'ko', 'ja', 'fr', 'de', 'es', 'ru', 'it'];
     const langNames = { vi:'Tiếng Việt', en:'English', zh:'中文', ko:'한국어', ja:'日本語', fr:'Français', de:'Deutsch', es:'Español', ru:'Русский', it:'Italiano' };
     const i18n = {
@@ -504,48 +547,43 @@
         it: { study:'Studia', words:'Parole', quiz:'Quiz', swipeHint:'Scorri', delete:'Elimina', prev:'Prec', flip:'Gira', next:'Succ', random:'Casuale', export:'Esporta Word', add:'Aggiungi', termToDef:'Termine → Def', defToTerm:'Def → Termine', check:'Verifica', nextQ:'Prossimo', refresh:'Aggiorna', edit:'Modifica', cancel:'Annulla', update:'Aggiorna', empty:'Nessuna carta', word:'Parola', meaning:'Significato', wordTip:'Suggerimento: .docx con Word.' }
     };
 
-    // Bàn phím với chữ tượng hình bổ sung
-    const keyboardLayouts = {
-        vi: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m'],['á','à','ả','ã','ạ','â','ă','ê','ô','ơ','ư','đ'],['⬅️','␣','⌫']],
-        en: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m'],['⬅️','␣','⌫']],
-        zh: [
-            ['1','2','3','4','5','6','7','8','9','0'],
-            ['ā','á','ǎ','à','ō','ó','ǒ','ò','ē','é','ě','è'],
-            ['ī','í','ǐ','ì','ū','ú','ǔ','ù','ǖ','ǘ','ǚ','ǜ'],
-            ['q','w','e','r','t','y','u','i','o','p'],
-            ['a','s','d','f','g','h','j','k','l'],
-            ['z','x','c','v','b','n','m'],
-            ['你','好','谢','爱','人','大','小','中','国','学','生','家','天','地','水','火','山','川','日','月'], // Hàng chữ Hán
-            ['⬅️','␣','⌫']
-        ],
-        ko: [
-            ['ㅂ','ㅈ','ㄷ','ㄱ','ㅅ','ㅛ','ㅕ','ㅑ','ㅐ','ㅔ'],
-            ['ㅁ','ㄴ','ㅇ','ㄹ','ㅎ','ㅗ','ㅓ','ㅏ','ㅣ'],
-            ['ㅋ','ㅌ','ㅊ','ㅍ','ㅠ','ㅜ','ㅡ'],
-            ['ㄲ','ㄸ','ㅃ','ㅆ','ㅉ'],
-            ['안녕','감사','사랑','한국','서울','학교','학생','선생님','친구','가족','행복','건강'], // Hàng từ Hangul thông dụng
-            ['⬅️','␣','⌫']
-        ],
-        ja: [
-            ['あ','い','う','え','お','ゃ','ゅ','ょ','っ'],
-            ['か','き','く','け','こ','が','ぎ','ぐ','げ','ご'],
-            ['さ','し','す','せ','そ','ざ','じ','ず','ぜ','ぞ'],
-            ['た','ち','つ','て','と','だ','ぢ','づ','で','ど'],
-            ['な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ'],
-            ['ば','び','ぶ','べ','ぼ','ぱ','ぴ','ぷ','ぺ','ぽ'],
-            ['ま','み','む','め','も','や','ゆ','よ','ら','り'],
-            ['る','れ','ろ','わ','を','ん','ー'],
-            ['ア','イ','ウ','エ','オ','カ','キ','ク','ケ','コ','私','学','生','先','日','本','語'], // Katakana & Kanji
-            ['⬅️','␣','⌫']
-        ],
-        fr: [['1','2','3','4','5','6','7','8','9','0'],['a','z','e','r','t','y','u','i','o','p'],['q','s','d','f','g','h','j','k','l','m'],['w','x','c','v','b','n'],['à','â','æ','ç','é','è','ê','ë','î','ï','ô','œ','ù','û','ü','ÿ'],['⬅️','␣','⌫']],
-        de: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','z','u','i','o','p','ü'],['a','s','d','f','g','h','j','k','l','ö','ä'],['y','x','c','v','b','n','m'],['ß','⬅️','␣','⌫']],
-        es: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l','ñ'],['z','x','c','v','b','n','m'],['á','é','í','ó','ú','ü','⬅️','␣','⌫']],
-        ru: [['1','2','3','4','5','6','7','8','9','0'],['й','ц','у','к','е','н','г','ш','щ','з','х','ъ'],['ф','ы','в','а','п','р','о','л','д','ж','э'],['я','ч','с','м','и','т','ь','б','ю'],['ё','⬅️','␣','⌫']],
-        it: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m'],['à','è','é','ì','í','ò','ó','ù','⬅️','␣','⌫']]
-    };
+    // ==================== TỪ ĐIỂN PINYIN ====================
+    const pinyinDict = new Map();
+    function initPinyinDict() {
+        const list = [
+            'ni:你', 'hao:好', 'wo:我', 'ta:他', 'men:们', 'shi:是', 'de:的', 'le:了', 'bu:不', 'zai:在',
+            'you:有', 'ren:人', 'da:大', 'xiao:小', 'zhong:中', 'guo:国', 'xue:学', 'sheng:生', 'jia:家',
+            'tian:天', 'di:地', 'shui:水', 'huo:火', 'shan:山', 'chuan:川', 'ri:日', 'yue:月', 'ai:爱',
+            'xie:谢', 'peng:朋', 'you:友', 'lao:老', 'shi:师', 'tong:同', 'xue:学', 'he:和', 'ye:也',
+            'hen:很', 'duo:多', 'shao:少', 'mei:没', 'ge:个', 'zi:子', 'nv:女', 'er:儿', 'shang:上',
+            'xia:下', 'zuo:左', 'you:右', 'qian:前', 'hou:后', 'jin:今', 'ming:明', 'bai:白', 'hei:黑',
+            'hong:红', 'huang:黄', 'lv:绿', 'lan:蓝', 'chi:吃', 'fan:饭', 'shui:睡', 'jiao:觉', 'kan:看',
+            'jian:见', 'ting:听', 'shuo:说', 'du:读', 'xie:写', 'zuo:做', 'wan:玩', 'gong:工', 'zuo:作',
+            'xi:习', 'dian:电', 'nao:脑', 'shou:手', 'ji:机', 'che:车', 'piao:票', 'qian:钱', 'mai:买',
+            'mai:卖', 'kai:开', 'guan:关', 'jin:进', 'chu:出', 'lai:来', 'qu:去', 'hui:回', 'dao:到',
+            'zou:走', 'pao:跑', 'tiao:跳', 'gao:高', 'xing:兴', 'nan:难', 'guo:过', 'kuai:快', 'le:乐',
+            'man:慢', 're:热', 'leng:冷', 'huai:坏', 'xin:新', 'jiu:旧', 'dui:对', 'cuo:错', 'zai:再',
+            'jian:见', 'nin:您', 'qing:请', 'wen:问', 'bang:帮', 'zhu:助', 'ma:吗', 'ne:呢', 'ba:吧',
+            'a:啊', 'ya:呀', 'wa:哇', 'la:啦', 'o:哦', 'en:嗯', 'ai:唉', 'ei:诶', 'ou:哦', 'an:安',
+            'en:恩', 'yin:因', 'yun:云', 'wei:为', 'shen:什', 'me:么', 'zen:怎', 'yang:样', 'na:那',
+            'zhe:这', 'li:里', 'mian:面', 'dou:都', 'neng:能', 'ke:可', 'yi:以', 'yao:要', 'hui:会',
+            'shuo:说', 'kan:看', 'jian:见', 'ting:听', 'dong:懂', 'bu:不', 'tai:太', 'fei:非', 'chang:常',
+            'xie:谢', 'xie:谢', 'ni:你', 'de:的', 'bang:帮', 'zhu:助', 'zai:再', 'ci:次', 'gan:感',
+            'xie:谢', 'huan:欢', 'ying:迎', 'lai:来', 'dao:到', 'wo:我', 'men:们', 'de:的', 'wang:网',
+            'zhan:站', 'ru:如', 'guo:果', 'you:有', 'wen:问', 'ti:题', 'qing:请', 'lian:联', 'xi:系',
+            'women:我们', 'nimen:你们', 'tamen:他们', 'xiexie:谢谢', 'nihao:你好', 'zaijian:再见',
+            'pengyou:朋友', 'laoshi:老师', 'tongxue:同学', 'diannao:电脑', 'shouji:手机',
+            'zhongguo:中国', 'beijing:北京', 'shanghai:上海', 'guangzhou:广州', 'shenzhen:深圳'
+        ];
+        list.forEach(item => {
+            const [pinyin, hanzi] = item.split(':');
+            if (!pinyinDict.has(pinyin)) pinyinDict.set(pinyin, []);
+            if (!pinyinDict.get(pinyin).includes(hanzi)) pinyinDict.get(pinyin).push(hanzi);
+        });
+    }
+    initPinyinDict();
 
-    // ==================== BIẾN TOÀN CỤC & DOM (giữ nguyên) ====================
+    // ==================== STATE & DOM ====================
     let currentLang = 'vi';
     let decks = {};
     let currentWordlistDeck = 'vi';
@@ -555,7 +593,9 @@
     let quizMode = 'termToDef', currentQuizCard = null;
     let darkMode = false;
     let virtualKeyboardVisible = false;
-    let currentKeyboardLang = localStorage.getItem('flashcard_keyboard_lang') || 'vi';
+    let currentKeyboardLang = 'vi';
+    let shiftActive = false;
+    const imeState = { mode: 'telex', composition: '', candidates: [] };
 
     const panels = { flashcard: document.getElementById('panel-flashcard'), wordlist: document.getElementById('panel-wordlist'), quiz: document.getElementById('panel-quiz') };
     const cardScene = document.getElementById('cardScene'), counterDisplay = document.getElementById('counterDisplay');
@@ -583,92 +623,11 @@
     const SWIPE_THRESHOLD = 50;
 
     function escapeHtml(t) { return String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]); }
+    function showToast(msg) { const toast = document.createElement('div'); toast.className='toast-msg'; toast.textContent=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(), 3000); }
 
-    function setInputLanguage(lang) {
-        newWordInput.setAttribute('lang', lang);
-        newDefInput.setAttribute('lang', lang);
-    }
-
-    // ==================== BÀN PHÍM ẢO ====================
-    function buildKeyboard(lang) {
-        const layout = keyboardLayouts[lang] || keyboardLayouts['en'];
-        let html = `<div class="keyboard-lang-grid" id="keyboardLangGrid">`;
-        const mainLangs = ['vi','en','zh','ko','ja','fr','de','es','ru','it'];
-        mainLangs.forEach(l => {
-            html += `<button class="lang-shortcut ${l === lang ? 'active-lang' : ''}" data-lang="${l}">${l.toUpperCase()}</button>`;
-        });
-        html += `</div>`;
-        layout.forEach(row => {
-            html += '<div class="keyboard-row">';
-            row.forEach(key => {
-                let cls = 'keyboard-key';
-                if (key === '⬅️') cls += ' special';
-                else if (key === '⌫') cls += ' special';
-                else if (key === '␣') cls += ' space special';
-                else if (key.length > 1 && !key.match(/[a-zA-Z0-9]/)) cls += ' special';
-                html += `<button class="${cls}" data-key="${key}">${key}</button>`;
-            });
-            html += '</div>';
-        });
-        html += `<div class="keyboard-row"><button class="keyboard-key hide" data-key="HIDE"><i class="fas fa-chevron-down"></i> Ẩn</button></div>`;
-        virtualKeyboardDiv.innerHTML = html;
-
-        document.querySelectorAll('.lang-shortcut[data-lang]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const newLang = btn.dataset.lang;
-                if (newLang && keyboardLayouts[newLang]) {
-                    changeKeyboardLang(newLang);
-                }
-            });
-        });
-    }
-
-    function changeKeyboardLang(newLang) {
-        if (!keyboardLayouts[newLang]) return;
-        currentKeyboardLang = newLang;
-        localStorage.setItem('flashcard_keyboard_lang', newLang);
-        buildKeyboard(newLang);
-    }
-
-    function showVirtualKeyboard() {
-        if (!virtualKeyboardVisible) {
-            buildKeyboard(currentKeyboardLang);
-            virtualKeyboardDiv.style.display = 'block';
-            virtualKeyboardVisible = true;
-        }
-    }
-
-    function hideVirtualKeyboard() {
-        virtualKeyboardDiv.style.display = 'none';
-        virtualKeyboardVisible = false;
-    }
-
-    function handleVirtualKey(key) {
-        const input = newWordInput;
-        if (key === 'HIDE') { hideVirtualKeyboard(); input.blur(); return; }
-        if (key === '⌫') {
-            const start = input.selectionStart, end = input.selectionEnd;
-            input.value = input.value.slice(0, start-1) + input.value.slice(start);
-            input.selectionStart = input.selectionEnd = Math.max(0, start-1);
-        } else if (key === '␣') {
-            const start = input.selectionStart, end = input.selectionEnd;
-            input.value = input.value.slice(0, start) + ' ' + input.value.slice(end);
-            input.selectionStart = input.selectionEnd = start + 1;
-        } else if (key === '⬅️') {
-            const pos = input.selectionStart;
-            if (pos > 0) input.selectionStart = input.selectionEnd = pos - 1;
-        } else {
-            const start = input.selectionStart, end = input.selectionEnd;
-            input.value = input.value.slice(0, start) + key + input.value.slice(end);
-            input.selectionStart = input.selectionEnd = start + key.length;
-        }
-        input.focus();
-    }
-
-    // ==================== CÁC HÀM XỬ LÝ CHÍNH (giữ nguyên hoàn toàn) ====================
+    // ==================== DECKS ====================
     function initDecks() {
-        const stored = localStorage.getItem('flashcard_decks_v9');
+        const stored = localStorage.getItem('flashcard_decks_v13');
         if (stored) { try { decks = JSON.parse(stored); } catch(e){ setDefaultDecks(); } }
         else { setDefaultDecks(); }
         if (!decks || Object.keys(decks).length === 0) setDefaultDecks();
@@ -679,10 +638,11 @@
     function setDefaultDecks() {
         decks = {
             vi: { name: 'Tiếng Việt', cards: [{ question: "xin chào", answer: "hello" },{ question: "cảm ơn", answer: "thank you" }] },
-            en: { name: 'English', cards: [{ question: "hello", answer: "xin chào" },{ question: "thank you", answer: "cảm ơn" }] }
+            en: { name: 'English', cards: [{ question: "hello", answer: "xin chào" },{ question: "thank you", answer: "cảm ơn" }] },
+            zh: { name: '中文', cards: [{ question: "你好", answer: "xin chào" },{ question: "谢谢", answer: "cảm ơn" }] }
         };
     }
-    function saveDecks() { localStorage.setItem('flashcard_decks_v9', JSON.stringify(decks)); }
+    function saveDecks() { localStorage.setItem('flashcard_decks_v13', JSON.stringify(decks)); }
 
     function updateAllDeckSelectors() {
         const updateSelect = (selectEl, currentKey) => {
@@ -716,11 +676,9 @@
                     if (currentQuizDeck === key) currentQuizDeck = currentWordlistDeck;
                     renderDeckTabs(); updateAllDeckSelectors();
                     renderWordList(); renderFlashcard(); loadQuiz();
-                    setInputLanguage(currentWordlistDeck);
                 } else {
                     currentWordlistDeck = key;
                     renderDeckTabs(); renderWordList();
-                    setInputLanguage(key);
                 }
             });
             deckTabsContainer.appendChild(tab);
@@ -730,6 +688,7 @@
     function getCurrentFlashcardCards() { return decks[currentFlashcardDeck]?.cards || []; }
     function getCurrentWordlistCards() { return decks[currentWordlistDeck]?.cards || []; }
 
+    // ==================== FLASHCARD ====================
     function renderFlashcard() {
         const cards = getCurrentFlashcardCards();
         if (!cards.length) {
@@ -748,14 +707,28 @@
     }
     function setFlashEnabled(e) { [prevBtn,nextBtn,flipBtn,randomFlashBtn,deleteCardFlashBtn].forEach(b=>b.disabled=!e); }
     function toggleFlip() { if(!getCurrentFlashcardCards().length) return; const el = document.getElementById('flashcard'); if(el) { isFlipped = !isFlipped; el.classList.toggle('flipped', isFlipped); } }
+    function goPrev() { const cards = getCurrentFlashcardCards(); if(cards.length && currentIndex>0) { currentIndex--; isFlipped=false; renderFlashcard(); } }
+    function goNext() { const cards = getCurrentFlashcardCards(); if(cards.length && currentIndex<cards.length-1) { currentIndex++; isFlipped=false; renderFlashcard(); } }
+    function goRandom() { const cards = getCurrentFlashcardCards(); if(cards.length>1) { let n; do{n=Math.floor(Math.random()*cards.length);}while(n===currentIndex); currentIndex=n; isFlipped=false; renderFlashcard(); } }
+    function deleteCurrentFlash() {
+        const cards = decks[currentFlashcardDeck].cards;
+        if(!cards.length) return;
+        cards.splice(currentIndex,1); saveDecks();
+        if(!cards.length) { currentIndex=-1; renderFlashcard(); if(currentWordlistDeck===currentFlashcardDeck) renderWordList(); updateAllDeckSelectors(); return; }
+        if(currentIndex>=cards.length) currentIndex=cards.length-1;
+        isFlipped=false; renderFlashcard();
+        if(currentWordlistDeck===currentFlashcardDeck) renderWordList();
+        updateAllDeckSelectors();
+    }
 
+    // ==================== WORDLIST ====================
     function renderWordList() {
         const cards = getCurrentWordlistCards();
         if (!cards.length) { wordListContainer.innerHTML = `<li class="empty-msg">${i18n[currentLang].empty}</li>`; wordCountSpan.textContent = `0 ${i18n[currentLang].word}`; return; }
         wordCountSpan.textContent = `${cards.length} ${i18n[currentLang].word}`;
         let html = '';
         cards.forEach((c, i) => {
-            html += `<li class="word-item">
+            html += `<li class="word-item" data-index="${i}">
                 <span class="word-index">${i+1}</span>
                 <div class="word-info"><div class="word-term">${escapeHtml(c.question)}</div><div class="word-def">${escapeHtml(c.answer)}</div></div>
                 <div class="item-actions">
@@ -765,8 +738,22 @@
             </li>`;
         });
         wordListContainer.innerHTML = html;
-        wordListContainer.querySelectorAll('.delete-word').forEach(b => b.addEventListener('click', e => { const idx = b.dataset.index; if (idx !== undefined) { decks[currentWordlistDeck].cards.splice(idx, 1); saveDecks(); renderWordList(); if (currentWordlistDeck === currentFlashcardDeck) renderFlashcard(); updateAllDeckSelectors(); }}));
-        wordListContainer.querySelectorAll('.edit-word').forEach(b => b.addEventListener('click', e => { const idx = b.dataset.index; if (idx !== undefined) { const c = decks[currentWordlistDeck].cards[idx]; newWordInput.value = c.question; newDefInput.value = c.answer; editingIndex = idx; addWordBtn.innerHTML = `<i class="fas fa-pen"></i> ${i18n[currentLang].update}`; cancelEditBtn.style.display = 'flex'; }}));
+        wordListContainer.querySelectorAll('.delete-word').forEach(b => b.addEventListener('click', e => {
+            const idx = b.dataset.index;
+            const item = b.closest('.word-item');
+            item.classList.add('removing');
+            setTimeout(() => {
+                decks[currentWordlistDeck].cards.splice(idx, 1); saveDecks(); renderWordList();
+                if (currentWordlistDeck === currentFlashcardDeck) renderFlashcard();
+                updateAllDeckSelectors();
+            }, 200);
+        }));
+        wordListContainer.querySelectorAll('.edit-word').forEach(b => b.addEventListener('click', e => {
+            const idx = b.dataset.index;
+            const c = decks[currentWordlistDeck].cards[idx];
+            newWordInput.value = c.question; newDefInput.value = c.answer; editingIndex = idx;
+            addWordBtn.innerHTML = `<i class="fas fa-pen"></i> ${i18n[currentLang].update}`; cancelEditBtn.style.display = 'flex';
+        }));
     }
 
     function addOrUpdateWord() {
@@ -796,6 +783,7 @@
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `flashcard_${currentWordlistDeck}.docx`; a.click(); showToast('📄 File .docx đã sẵn sàng!');
     }
 
+    // ==================== QUIZ ====================
     function getQuizCards() { return decks[currentQuizDeck]?.cards || []; }
     function loadQuiz() {
         currentQuizCard = getQuizCards()[Math.floor(Math.random()*getQuizCards().length)] || null;
@@ -812,31 +800,172 @@
         quizFeedback.classList.add(isCorrect ? 'correct' : 'incorrect');
     }
 
-    function goPrev() { const cards = getCurrentFlashcardCards(); if(cards.length && currentIndex>0) { currentIndex--; isFlipped=false; renderFlashcard(); } }
-    function goNext() { const cards = getCurrentFlashcardCards(); if(cards.length && currentIndex<cards.length-1) { currentIndex++; isFlipped=false; renderFlashcard(); } }
-    function goRandom() { const cards = getCurrentFlashcardCards(); if(cards.length>1) { let n; do{n=Math.floor(Math.random()*cards.length);}while(n===currentIndex); currentIndex=n; isFlipped=false; renderFlashcard(); } }
-    function deleteCurrentFlash() {
-        const cards = decks[currentFlashcardDeck].cards;
-        if(!cards.length) return;
-        cards.splice(currentIndex,1); saveDecks();
-        if(!cards.length) { currentIndex=-1; renderFlashcard(); if(currentWordlistDeck===currentFlashcardDeck) renderWordList(); updateAllDeckSelectors(); return; }
-        if(currentIndex>=cards.length) currentIndex=cards.length-1;
-        isFlipped=false; renderFlashcard();
-        if(currentWordlistDeck===currentFlashcardDeck) renderWordList();
-        updateAllDeckSelectors();
-    }
-
+    // ==================== TOUCH SWIPE ====================
     function handleTouchStart(e) { if(!getCurrentFlashcardCards().length) return; touchStartX=e.touches[0].clientX; isSwiping=true; swipeContainer.style.transition='none'; }
     function handleTouchMove(e) { if(!isSwiping) return; touchCurrentX=e.touches[0].clientX; let dx=touchCurrentX-touchStartX; dx=Math.max(-120, Math.min(120,dx)); swipeContainer.style.transform=`translateX(${dx}px)`; }
     function handleTouchEnd() { if(!isSwiping) return; isSwiping=false; const dx = touchCurrentX - touchStartX; swipeContainer.style.transition = 'transform 0.25s'; if (Math.abs(dx) > SWIPE_THRESHOLD) { if (dx > 0 && currentIndex > 0) { swipeContainer.style.transform = 'translateX(130%) scale(0.95)'; setTimeout(()=>{ goPrev(); swipeContainer.style.transition=''; swipeContainer.style.transform=''; },200); } else if (dx < 0 && currentIndex < getCurrentFlashcardCards().length-1) { swipeContainer.style.transform = 'translateX(-130%) scale(0.95)'; setTimeout(()=>{ goNext(); swipeContainer.style.transition=''; swipeContainer.style.transform=''; },200); } else { swipeContainer.style.transform='translateX(0)'; setTimeout(()=>swipeContainer.style.transition='',200); } } else { swipeContainer.style.transform='translateX(0)'; setTimeout(()=>swipeContainer.style.transition='',200); } }
 
-    function showToast(msg) { const toast = document.createElement('div'); toast.className='toast-msg'; toast.textContent=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(), 3000); }
+    // ==================== VIRTUAL KEYBOARD ====================
+    const baseLayouts = {
+        vi: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m'],['á','à','ả','ã','ạ','â','ă','ê','ô','ơ','ư','đ'],['⬆️','␣','⌫']],
+        en: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m'],['⬆️','␣','⌫']],
+        zh: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m'],['⬆️','␣','⌫']],
+        ko: [['ㅂ','ㅈ','ㄷ','ㄱ','ㅅ','ㅛ','ㅕ','ㅑ','ㅐ','ㅔ'],['ㅁ','ㄴ','ㅇ','ㄹ','ㅎ','ㅗ','ㅓ','ㅏ','ㅣ'],['ㅋ','ㅌ','ㅊ','ㅍ','ㅠ','ㅜ','ㅡ'],['⬆️','␣','⌫']],
+        ja: [['あ','か','さ','た','な','は','ま','や','ら','わ'],['い','き','し','ち','に','ひ','み','り'],['う','く','す','つ','ぬ','ふ','む','ゆ','る','ん'],['え','け','せ','て','ね','へ','め','れ'],['お','こ','そ','と','の','ほ','も','よ','ろ','を'],['⬆️','␣','⌫']],
+        fr: [['1','2','3','4','5','6','7','8','9','0'],['a','z','e','r','t','y','u','i','o','p'],['q','s','d','f','g','h','j','k','l','m'],['w','x','c','v','b','n'],['à','â','æ','ç','é','è','ê','ë','î','ï','ô','œ','ù','û','ü','ÿ'],['⬆️','␣','⌫']],
+        de: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','z','u','i','o','p','ü'],['a','s','d','f','g','h','j','k','l','ö','ä'],['y','x','c','v','b','n','m'],['ß','⬆️','␣','⌫']],
+        es: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l','ñ'],['z','x','c','v','b','n','m'],['á','é','í','ó','ú','ü','⬆️','␣','⌫']],
+        ru: [['1','2','3','4','5','6','7','8','9','0'],['й','ц','у','к','е','н','г','ш','щ','з','х','ъ'],['ф','ы','в','а','п','р','о','л','д','ж','э'],['я','ч','с','м','и','т','ь','б','ю'],['ё','⬆️','␣','⌫']],
+        it: [['1','2','3','4','5','6','7','8','9','0'],['q','w','e','r','t','y','u','i','o','p'],['a','s','d','f','g','h','j','k','l'],['z','x','c','v','b','n','m'],['à','è','é','ì','í','ò','ó','ù','⬆️','␣','⌫']]
+    };
 
-    function updateUITexts() {
-        document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if(i18n[currentLang]?.[key]) el.textContent = i18n[currentLang][key]; });
-        document.getElementById('appTitle').textContent = 'Flashcard';
+    function applyVietnameseIME(current, key, mode) {
+        if (mode === 'telex') {
+            const telexMap = { 'aw':'ă','aa':'â','ee':'ê','oo':'ô','ow':'ơ','uw':'ư','dd':'đ' };
+            for (let [seq, rep] of Object.entries(telexMap)) if ((current+key).endsWith(seq)) return current.slice(0, -seq.length+1) + rep;
+        }
+        return current + key;
     }
 
+    function processKey(key) {
+        const input = newWordInput;
+        const start = input.selectionStart;
+        const before = input.value.slice(0, start);
+        const after = input.value.slice(start);
+        let result = before;
+        const lang = currentKeyboardLang;
+
+        if (lang === 'vi') {
+            result = applyVietnameseIME(before, key, imeState.mode);
+            imeState.composition = '';
+        } else if (lang === 'zh') {
+            if (/[a-z]/.test(key)) {
+                imeState.composition += key;
+                const candidates = pinyinDict.get(imeState.composition) || [];
+                imeState.candidates = candidates;
+                result = before;
+            } else if (key === ' ') {
+                if (imeState.composition) {
+                    const candidates = pinyinDict.get(imeState.composition) || [];
+                    const chosen = candidates.length ? candidates[0] : imeState.composition;
+                    result = before.slice(0, -imeState.composition.length) + chosen;
+                    imeState.composition = '';
+                    imeState.candidates = [];
+                } else {
+                    result = before + ' ';
+                }
+            } else if (key === '⌫') {
+                return;
+            } else {
+                result = before + key;
+                imeState.composition = '';
+                imeState.candidates = [];
+            }
+        } else {
+            result = before + key;
+            imeState.composition = '';
+        }
+
+        input.value = result + after;
+        input.selectionStart = input.selectionEnd = result.length;
+        updateCandidateBar();
+    }
+
+    function updateCandidateBar() {
+        const bar = document.getElementById('candidateBar');
+        if (!bar) return;
+        bar.innerHTML = '';
+        if (imeState.composition) {
+            const compSpan = document.createElement('span');
+            compSpan.className = 'candidate-composition';
+            compSpan.textContent = imeState.composition;
+            bar.appendChild(compSpan);
+        }
+        imeState.candidates.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'candidate-item';
+            btn.textContent = c;
+            btn.addEventListener('click', () => {
+                const input = newWordInput;
+                const start = input.selectionStart;
+                const before = input.value.slice(0, start);
+                const newBefore = before.slice(0, -imeState.composition.length) + c;
+                input.value = newBefore + input.value.slice(start);
+                input.selectionStart = input.selectionEnd = newBefore.length;
+                imeState.composition = '';
+                imeState.candidates = [];
+                updateCandidateBar();
+                input.focus();
+            });
+            bar.appendChild(btn);
+        });
+    }
+
+    function buildKeyboard(lang) {
+        const layout = baseLayouts[lang] || baseLayouts['en'];
+        let html = `<div class="keyboard-lang-grid">`;
+        languages.forEach(l => html += `<button class="lang-shortcut ${l===lang?'active-lang':''}" data-lang="${l}">${l.toUpperCase()}</button>`);
+        html += `</div>`;
+        if (lang === 'vi') html += `<div class="ime-controls"><button class="ime-toggle" data-mode="telex">Telex</button><button class="ime-toggle" data-mode="vni">VNI</button></div>`;
+        html += `<div id="candidateBar" class="candidate-bar"></div>`;
+        layout.forEach(row => {
+            html += '<div class="keyboard-row">';
+            row.forEach(key => {
+                let display = key;
+                if (shiftActive && key.length===1) display = /[a-z]/.test(key) ? key.toUpperCase() : key.toLowerCase();
+                let cls = 'keyboard-key';
+                if (key==='⬆️'||key==='⌫') cls+=' special';
+                if (key==='␣') cls+=' space special';
+                html += `<button class="${cls}" data-key="${key}">${display}</button>`;
+            });
+            html += '</div>';
+        });
+        html += `<div class="keyboard-row"><button class="keyboard-key hide" data-key="HIDE"><i class="fas fa-chevron-down"></i> Ẩn</button></div>`;
+        virtualKeyboardDiv.innerHTML = html;
+        updateCandidateBar();
+        document.querySelectorAll('.lang-shortcut').forEach(b => b.addEventListener('click', ()=>{
+            currentKeyboardLang = b.dataset.lang;
+            shiftActive = false;
+            imeState.composition = '';
+            imeState.candidates = [];
+            buildKeyboard(currentKeyboardLang);
+        }));
+        document.querySelectorAll('.ime-toggle').forEach(b => b.addEventListener('click', ()=>{
+            imeState.mode = b.dataset.mode;
+            showToast(`Chuyển sang ${imeState.mode.toUpperCase()}`);
+        }));
+    }
+
+    function handleVirtualKey(key) {
+        if (key === 'HIDE') { hideVirtualKeyboard(); return; }
+        if (key === '⬆️') { shiftActive = !shiftActive; buildKeyboard(currentKeyboardLang); return; }
+        if (key === '⌫') {
+            const input = newWordInput;
+            const start = input.selectionStart;
+            if (currentKeyboardLang === 'zh' && imeState.composition) {
+                imeState.composition = imeState.composition.slice(0, -1);
+                imeState.candidates = pinyinDict.get(imeState.composition) || [];
+                updateCandidateBar();
+            } else if (start > 0) {
+                input.value = input.value.slice(0, start-1) + input.value.slice(start);
+                input.selectionStart = input.selectionEnd = start-1;
+                imeState.composition = '';
+                imeState.candidates = [];
+                updateCandidateBar();
+            }
+            return;
+        }
+        if (key === '␣') { processKey(' '); return; }
+        processKey(key);
+    }
+
+    function showVirtualKeyboard() { if(!virtualKeyboardVisible){ buildKeyboard(currentKeyboardLang); virtualKeyboardDiv.style.display='block'; virtualKeyboardVisible=true; } }
+    function hideVirtualKeyboard() { virtualKeyboardDiv.style.display='none'; virtualKeyboardVisible=false; }
+
+    // ==================== INIT ====================
+    function updateUITexts() {
+        document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.dataset.i18n; if(i18n[currentLang]?.[key]) el.textContent = i18n[currentLang][key]; });
+    }
     function toggleTheme() {
         darkMode = !darkMode;
         document.body.classList.toggle('dark-mode', darkMode);
@@ -849,27 +978,25 @@
         const savedTheme = localStorage.getItem('flashcard_theme');
         if (savedTheme === 'dark') { darkMode = true; document.body.classList.add('dark-mode'); themeToggle.innerHTML = '<i class="fas fa-sun"></i>'; }
         renderDeckTabs(); updateAllDeckSelectors();
-        setInputLanguage(currentWordlistDeck);
         renderFlashcard(); renderWordList(); loadQuiz();
 
         languages.forEach(l => { const opt = document.createElement('option'); opt.value = l; opt.textContent = langNames[l]; if (l === currentLang) opt.selected = true; langSelect.appendChild(opt); });
-        langSelect.addEventListener('change', (e) => { currentLang = e.target.value; updateUITexts(); renderFlashcard(); renderWordList(); loadQuiz(); });
+        langSelect.addEventListener('change', e => { currentLang = e.target.value; updateUITexts(); renderFlashcard(); renderWordList(); loadQuiz(); });
         updateUITexts();
 
         themeToggle.addEventListener('click', toggleTheme);
-        flashcardDeckSelector.addEventListener('change', (e) => { currentFlashcardDeck = e.target.value; currentIndex = 0; isFlipped = false; renderFlashcard(); });
-        quizDeckSelector.addEventListener('change', (e) => { currentQuizDeck = e.target.value; loadQuiz(); });
+        flashcardDeckSelector.addEventListener('change', e => { currentFlashcardDeck = e.target.value; currentIndex=0; isFlipped=false; renderFlashcard(); });
+        quizDeckSelector.addEventListener('change', e => { currentQuizDeck = e.target.value; loadQuiz(); });
 
-        showAddDeckFormBtn.addEventListener('click', ()=> { addDeckForm.style.display = 'flex'; newDeckName.focus(); });
-        cancelAddDeckBtn.addEventListener('click', ()=> { addDeckForm.style.display = 'none'; newDeckName.value = ''; });
+        showAddDeckFormBtn.addEventListener('click', ()=> { addDeckForm.style.display='flex'; newDeckName.focus(); });
+        cancelAddDeckBtn.addEventListener('click', ()=> { addDeckForm.style.display='none'; newDeckName.value=''; });
         confirmAddDeckBtn.addEventListener('click', ()=>{
             const name = newDeckName.value.trim(), lang = newDeckLang.value;
             if (!name) { showToast('⚠️ Vui lòng nhập tên bộ'); return; }
-            if (decks[lang]) { showToast('⚠️ Bộ với mã ngôn ngữ này đã tồn tại'); return; }
-            decks[lang] = { name: name, cards: [] }; saveDecks(); renderDeckTabs(); updateAllDeckSelectors();
+            if (decks[lang]) { showToast('⚠️ Bộ đã tồn tại'); return; }
+            decks[lang] = { name, cards: [] }; saveDecks(); renderDeckTabs(); updateAllDeckSelectors();
             currentWordlistDeck = lang; renderDeckTabs(); renderWordList();
-            setInputLanguage(lang);
-            addDeckForm.style.display = 'none'; newDeckName.value = ''; showToast(`✅ Đã tạo bộ "${name}"`);
+            addDeckForm.style.display='none'; newDeckName.value=''; showToast(`✅ Đã tạo bộ "${name}"`);
         });
 
         document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', ()=>{
@@ -877,7 +1004,7 @@
             Object.values(panels).forEach(p => p.classList.remove('active')); panels[tab].classList.add('active');
             document.querySelectorAll('.tab-btn').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
             if (tab === 'flashcard') { renderFlashcard(); hideVirtualKeyboard(); }
-            if (tab === 'wordlist') { renderWordList(); setInputLanguage(currentWordlistDeck); hideVirtualKeyboard(); }
+            if (tab === 'wordlist') { renderWordList(); hideVirtualKeyboard(); }
             if (tab === 'quiz') { loadQuiz(); hideVirtualKeyboard(); }
         }));
 
@@ -889,26 +1016,17 @@
         });
         exportWordBtn.addEventListener('click', exportToDocx);
 
-        newWordInput.addEventListener('focus', () => { showVirtualKeyboard(); });
-        newWordInput.addEventListener('blur', (e) => {
-            setTimeout(() => {
-                if (!virtualKeyboardDiv.contains(document.activeElement) && document.activeElement !== newWordInput) {
-                    hideVirtualKeyboard();
-                }
-            }, 150);
-        });
-        virtualKeyboardDiv.addEventListener('click', (e) => {
-            const keyBtn = e.target.closest('.keyboard-key');
-            if (!keyBtn) return;
+        newWordInput.addEventListener('focus', showVirtualKeyboard);
+        virtualKeyboardDiv.addEventListener('click', e => {
+            const btn = e.target.closest('.keyboard-key');
+            if (!btn) return;
             e.preventDefault();
-            const key = keyBtn.dataset.key;
-            if (key) handleVirtualKey(key);
+            handleVirtualKey(btn.dataset.key);
         });
-        virtualKeyboardDiv.addEventListener('mousedown', (e) => e.preventDefault());
+        virtualKeyboardDiv.addEventListener('mousedown', e => e.preventDefault());
 
         const stage = document.getElementById('cardStage');
         stage.addEventListener('touchstart', handleTouchStart, {passive:true}); stage.addEventListener('touchmove', handleTouchMove, {passive:true}); stage.addEventListener('touchend', handleTouchEnd);
-
         window.addEventListener('keydown', e => { if(panels.flashcard.classList.contains('active')){ if(e.key==='ArrowLeft'){e.preventDefault(); goPrev();} else if(e.key==='ArrowRight'){e.preventDefault(); goNext();} else if(e.key===' '){e.preventDefault(); toggleFlip();} } });
 
         submitQuizBtn.addEventListener('click', checkQuiz); nextQuizBtn.addEventListener('click', loadQuiz); newQuizBtn.addEventListener('click', loadQuiz);
